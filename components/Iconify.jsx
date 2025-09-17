@@ -1,7 +1,9 @@
+"use client";
+
 import { Icon } from "@iconify/react";
 
-const Iconify = ({ icon, width = "1em", height = "1em", ...other }) => {
-  return <Icon icon={icon} width={width} height={height} {...other} />;
+const Iconify = ({ ...other }) => {
+  return <Icon {...other} />;
 };
 
 export default Iconify;

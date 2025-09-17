@@ -24,6 +24,7 @@ const Header = () => {
             height={40}
             alt="logo"
             className={css.logo}
+            priority
           />
           {/* actions */}
           <Flex gap={25} align="center">

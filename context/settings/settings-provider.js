@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { SettingsContext } from "./settings-context";
+import {  SettingsContext } from "./settings-context";
 
 export function SettingsContextProvider({ children }) {
   const [settings, setSettings] = useState({
