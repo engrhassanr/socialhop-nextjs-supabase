@@ -2,7 +2,7 @@
 import { Flex, Spin, Typography } from "antd";
 import React, { useEffect, useMemo, useState } from "react";
 import Post from "./Post";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyPostsFeed, getPosts } from "@/actions/post";
 import { useInView } from "react-intersection-observer";
 import { supabase } from "@/lib/supabase";
@@ -19,10 +19,11 @@ const Posts = ({ id = "all" }) => {
     )
   );
 
-  // Supabase direct fetching (simple, first page only)
+  // Supabase direct fetching (bootstrap cache only)
   const [sbPosts, setSbPosts] = useState([]);
   const [sbLoading, setSbLoading] = useState(false);
   const [sbError, setSbError] = useState(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const fetchFromSupabase = async () => {
@@ -52,8 +53,19 @@ const Posts = ({ id = "all" }) => {
         }));
         setSbPosts(normalized);
 
-        // If Supabase returned nothing, fallback to API mode
-        if (!normalized.length) {
+        // If we have rows, seed react-query cache so mutations work, then switch to API render path
+        if (normalized.length) {
+          queryClient.setQueryData(["posts", id], {
+            pageParams: [undefined],
+            pages: [
+              {
+                data: normalized,
+                metaData: { lastCursor: null, hasMore: false },
+              },
+            ],
+          });
+          setUseSupabaseMode(false);
+        } else {
           console.warn("Supabase returned no posts; falling back to API mode.");
           setUseSupabaseMode(false);
         }
@@ -88,6 +100,8 @@ const Posts = ({ id = "all" }) => {
       const params = new URLSearchParams();
       if (pageParam) params.set("cursor", pageParam);
       if (id) params.set("id", id);
+      // request all posts in one response
+      params.set("all", "true");
       const res = await fetch(`/api/posts?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch posts");
       return res.json();
@@ -167,17 +181,7 @@ const Posts = ({ id = "all" }) => {
     );
   }
 
-  if (useSupabaseMode) {
-    return (
-      <Flex vertical gap={"1rem"}>
-        {sbPosts.map((post, index) => (
-          <div key={post?.id}>
-            <Post data={post} queryId={id} />
-          </div>
-        ))}
-      </Flex>
-    );
-  }
+  // We no longer render a separate Supabase list; we seed the cache then use API path
 
   if (isSuccess) {
     return (
