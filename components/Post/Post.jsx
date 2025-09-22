@@ -116,7 +116,7 @@ const Post = ({ data, queryId }) => {
                   type="secondary"
                   strong
                 >
-                  {dayjs(data?.created_at).format("DD MMM YYYY")}
+                  {dayjs(data?.createdAt).format("DD MMM YYYY")}
                 </Typography.Text>
               </Flex>
             </Flex>
@@ -136,7 +136,7 @@ const Post = ({ data, queryId }) => {
           <Typography.Text className="typoBody2">
             <div
               dangerouslySetInnerHTML={{
-                __html: (data?.postText)?.replace(/\n/g, "<br/>"),
+                __html: data?.postText?.replace(/\n/g, "<br/>"),
               }}
             ></div>
           </Typography.Text>

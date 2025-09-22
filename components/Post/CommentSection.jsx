@@ -113,7 +113,7 @@ function Comment({ data }) {
 
             {/* date */}
             <Typography.Text className="typoCaption" type="secondary" strong>
-              {dayjs(data?.created_at).format("DD MMM YYYY")}
+              {dayjs(data?.createdAt).format("DD MMM YYYY")}
             </Typography.Text>
           </Flex>
 
