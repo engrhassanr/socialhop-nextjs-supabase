@@ -13,13 +13,13 @@ const UserBox = ({ data, type, loggedInUserData }) => {
   const { user: currentUser } = useUser();
   const queryClient = useQueryClient();
   const personId = data?.[type]?.id;
-  
+
   // deciding the status of follow button
   useEffect(() => {
     if (
       loggedInUserData?.following
         ?.map((person) => person?.followingId)
-        .includes(data?.[type === "follower" ? "followerId" : "followingId"])
+        .includes(data?.[type]?.id)
     ) {
       setFollowed(true);
     } else {
@@ -28,7 +28,7 @@ const UserBox = ({ data, type, loggedInUserData }) => {
   }, [loggedInUserData, setFollowed, data, type]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: updateFollow,
+    mutationFn: (params) => updateFollow(params),
 
     onMutate: async (params) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)

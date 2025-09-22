@@ -22,7 +22,7 @@ const LikeButton = ({ postId, likes, queryId }) => {
   const queryClient = useQueryClient();
 
   const { mutate } = useMutation({
-    mutationFn: (postId, actionType) => updatePostLike(postId, actionType),
+    mutationFn: ({ postId, actionType }) => updatePostLike(postId, actionType),
 
     // This function will be run just before the mutation function
     onMutate: async () => {
@@ -80,7 +80,7 @@ const LikeButton = ({ postId, likes, queryId }) => {
         size="small"
         style={{ background: "transparent", border: "none", boxShadow: "none" }}
         onClick={() => {
-          mutate(postId, actionType);
+          mutate({ postId, actionType });
         }}
       >
         <Flex gap={".5rem"} align="center">

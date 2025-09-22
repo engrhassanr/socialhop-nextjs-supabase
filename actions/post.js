@@ -9,16 +9,48 @@ import { getAllFollowersAndFollowings } from "./user";
 export const createPost = async (post) => {
   const { postText, media } = post;
   try {
+    console.log("createPost called with:", { postText, media: !!media });
+
     let cld_id;
     let assetUrl;
     const { userId } = auth();
-    if (!userId) throw Error("Not authenticated");
+    console.log("Auth check:", { userId, authenticated: !!userId });
+
+    if (!userId) {
+      console.error("User not authenticated");
+      throw Error("Not authenticated - please sign in");
+    }
+
+    // Validate input - allow empty postText if there's media
+    const hasText = postText && postText.trim() !== "";
+    const hasMedia = !!media;
+
+    console.log("Validation check:", { hasText, hasMedia, postText });
+
+    if (!hasText && !hasMedia) {
+      throw Error("Post must contain text or media");
+    }
+
     if (media) {
+      console.log("Uploading media for user:", userId);
       const res = await uploadFile(media, `/posts/${userId}`);
+      console.log("Upload response:", res);
+      if (res.error) {
+        throw new Error(`Upload failed: ${res.error}`);
+      }
       const { public_id, secure_url } = res;
       cld_id = public_id;
       assetUrl = secure_url;
+      console.log("Media uploaded successfully:", secure_url);
     }
+
+    console.log("Creating post with data:", {
+      postText,
+      media: assetUrl,
+      cld_id,
+      userId,
+    });
+
     const newPost = await db.post.create({
       data: {
         postText,
@@ -32,6 +64,8 @@ export const createPost = async (post) => {
       },
     });
 
+    console.log("Post created successfully:", newPost.id);
+
     const trends = checkPostForTrends(postText);
     if (trends.length > 0) {
       createTrends(trends, newPost.id);
@@ -41,8 +75,8 @@ export const createPost = async (post) => {
       data: newPost,
     };
   } catch (e) {
-    console.log(e);
-    throw Error("Failed to create post");
+    console.error("Error creating post:", e);
+    throw new Error(e.message || "Failed to create post");
   }
 };
 

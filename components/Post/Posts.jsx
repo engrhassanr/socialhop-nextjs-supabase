@@ -66,7 +66,15 @@ const Posts = ({ id = "all" }) => {
   };
 
   if (error) {
-    return <Typography>Something went wrong</Typography>;
+
+    console.error("Posts fetch error:", error);
+    return (
+      <Flex justify="center" align="center" style={{ padding: "2rem" }}>
+        <Typography color="error">
+          Error loading posts: {error.message}
+        </Typography>
+      </Flex>
+    );
   }
 
   if (isLoading) {

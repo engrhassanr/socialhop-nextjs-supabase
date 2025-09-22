@@ -232,7 +232,7 @@ export const ensureCurrentUserInDB = async () => {
 
 export const getFollowSuggestions = async () => {
   try {
-    const loggedInUser = await currentUser();
+    const loggedInUser = await clerkCurrentUser();
     // Fetch all users that the given user is already following
     const following = await db.follow.findMany({
       where: {

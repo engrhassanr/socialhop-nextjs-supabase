@@ -54,7 +54,11 @@ const FollowPersonsBody = ({ id, type }) => {
                 person?.[type === "followers" ? "followerId" : "followingId"]
               }
               type={type === "followers" ? "follower" : "following"}
-              data={person}
+              data={{
+                [type === "followers" ? "follower" : "following"]:
+                  person?.[type === "followers" ? "follower" : "following"] ||
+                  {},
+              }}
               loggedInUserData={currentUserData}
             />
           ))}

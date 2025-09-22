@@ -11,13 +11,11 @@ import {
   QueryClient,
   dehydrate,
 } from "@tanstack/react-query";
-import {
-  getAllFollowersAndFollowings,
-} from "@/actions/user";
-import { currentUser } from "@clerk/nextjs";
+import { getAllFollowersAndFollowings } from "@/actions/user";
+import { currentUser as clerkCurrentUser } from "@clerk/nextjs";
 const HomeLayout = async ({ children }) => {
   const queryClient = new QueryClient();
-  const user = await currentUser();
+  const user = await clerkCurrentUser();
 
   // get profile info of logged in user
   await queryClient.prefetchQuery({
@@ -27,7 +25,6 @@ const HomeLayout = async ({ children }) => {
     // 20 mins stale time
     staleTime: 1000 * 60 * 20,
   });
-
 
   return (
     <SettingsContextProvider>

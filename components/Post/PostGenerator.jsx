@@ -13,6 +13,7 @@ const PostGenerator = () => {
   const imgInputRef = useRef(null);
   const vidInputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [originalFile, setOriginalFile] = useState(null);
   const [fileType, setFileType] = useState(null); // [image, video]
   const [postText, setPostText] = useState(null);
   const queryClient = useQueryClient();
@@ -22,11 +23,20 @@ const PostGenerator = () => {
       handleSuccess();
       queryClient.invalidateQueries("posts");
     },
-    onError: () => showError("Something wrong happened. Try again!"),
+    onError: (error) => {
+      console.error("Post creation error:", error);
+      console.error("Error details:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      });
+      showError(`Post creation failed: ${error.message}`);
+    },
   });
 
   const handleSuccess = () => {
     setSelectedFile(null);
+    setOriginalFile(null);
     setFileType(null);
     setPostText("");
     toast.success("Post created successfully!");
@@ -45,6 +55,7 @@ const PostGenerator = () => {
       (file.type.startsWith("image/") || file.type.startsWith("video/"))
     ) {
       setFileType(file.type.split("/")[0]);
+      setOriginalFile(file); // Store the original file for upload
 
       const reader = new FileReader();
 
@@ -58,6 +69,7 @@ const PostGenerator = () => {
 
   const handleRemoveFile = () => {
     setSelectedFile(null);
+    setOriginalFile(null);
     setFileType(null);
   };
 
@@ -66,11 +78,24 @@ const PostGenerator = () => {
   };
 
   function handleSubmitPost() {
-    if ((postText === "" || !postText) && !selectedFile) {
-      showError("Can't make an empty post");
+    // Validate that we have either text or media
+    const hasText = postText && postText.trim() !== "";
+    const hasMedia = originalFile;
+
+    console.log("Submitting post:", {
+      hasText,
+      hasMedia,
+      postText,
+      media: !!originalFile,
+    });
+
+    if (!hasText && !hasMedia) {
+      showError("Please add some text or select an image/video");
       return;
     }
+
     // don't forget to tell about the next.config.js file where we have set the limit of 5mb
+    // Pass Data URL instead of File to avoid client->server serialization issues
     execute({ postText, media: selectedFile });
   }
 
