@@ -12,10 +12,18 @@ import {
   dehydrate,
 } from "@tanstack/react-query";
 import { getAllFollowersAndFollowings } from "@/actions/user";
-import { currentUser as clerkCurrentUser } from "@clerk/nextjs";
+import {
+  currentUser as clerkCurrentUser,
+  redirectToSignIn,
+} from "@clerk/nextjs";
 const HomeLayout = async ({ children }) => {
   const queryClient = new QueryClient();
   const user = await clerkCurrentUser();
+
+  // If not authenticated, redirect to the sign-in page
+  if (!user) {
+    return redirectToSignIn();
+  }
 
   // get profile info of logged in user
   await queryClient.prefetchQuery({
